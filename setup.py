@@ -1,5 +1,5 @@
 """
-Copyright 2016-2017 Hermann Krumrey
+Copyright 2017 Hermann Krumrey
 
 This file is part of mal-scraper.
 
