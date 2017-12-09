@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """
 Copyright 2017 Hermann Krumrey
 
@@ -18,7 +17,14 @@ You should have received a copy of the GNU General Public License
 along with mal-scraper.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from malscraper.malscraper import main
+from malscraper.MalAnime import MalAnime, UserMalAnime
+
+
+def main():
+    MalAnime("https://myanimelist.net/anime/33486/"
+             "Boku_no_Hero_Academia_2nd_Season")
+    UserMalAnime("https://myanimelist.net/anime/33486/"
+                 "Boku_no_Hero_Academia_2nd_Season", "user_v42-1337")
 
 
 if __name__ == "__main__":

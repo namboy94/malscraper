@@ -87,7 +87,7 @@ setup(
     author_email="hermann@krumreyh.com",
     license="GNU GPL3",
     packages=find_packages(),
-    install_requires=["bs4", "requests", "typing"],
+    install_requires=["bs4", "requests", "typing", "lxml"],
     test_suite='nose.collector',
     tests_require=['nose'],
     scripts=find_scripts(),
