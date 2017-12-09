@@ -18,7 +18,7 @@ along with mal-scraper.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 
-version = "0.1.0"
+version = "0.1.1"
 """
 The current version of the project.
 """
