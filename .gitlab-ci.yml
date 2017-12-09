@@ -10,6 +10,8 @@ github_mirror:
   tags:
     - github_namboy94_push
   script:
+    - echo $GITHUB_ACCESS_TOKEN
+    - echo $GITLAB_ACCESS_TOKEN
     - git checkout master
     - git pull
     - git push git@github.com:namboy94/mal-scraper.git master -f
