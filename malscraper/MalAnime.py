@@ -17,6 +17,7 @@ You should have received a copy of the GNU General Public License
 along with mal-scraper.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import sys
 import time
 import requests
 from bs4 import BeautifulSoup
@@ -42,10 +43,18 @@ class MalAnime(object):
 
     @staticmethod
     def get_url_data(url: str) -> str:
+        sleeper = 1
         response = requests.get(url)
-        while response.status_code != 200:
-            time.sleep(1)
+
+        while response.status_code == 429:  # Circumvent rate limiting
+            time.sleep(sleeper)
+            sleeper += 1
             response = requests.get(url)
+
+        if response.status_code != 200:
+            print("HTTP ERROR: " + str(response.status_code) + " " + str(url))
+            sys.exit(1)
+
         return response.text
 
     def __parse_name(self) -> str:

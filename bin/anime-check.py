@@ -11,7 +11,7 @@ from malscraper.MalAnime import UserMalAnime, get_user_xml_data
 
 
 def check_watch_status(maldata: UserMalAnime) -> bool:
-    if maldata.watch_status == "on hold":
+    if maldata.watch_status == "onhold":
         print("\033[33m" + maldata.name + " is on hold\033[0m")
         return False
     elif maldata.watch_status != "completed":
