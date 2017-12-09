@@ -21,10 +21,7 @@ from malscraper.MalAnime import MalAnime, UserMalAnime
 
 
 def main():
-    MalAnime("https://myanimelist.net/anime/33486/"
-             "Boku_no_Hero_Academia_2nd_Season")
-    UserMalAnime("https://myanimelist.net/anime/33486/"
-                 "Boku_no_Hero_Academia_2nd_Season", "user_v42-1337")
+    UserMalAnime("https://myanimelist.net/anime/33836/Seiren", "user_v42-1337")
 
 
 if __name__ == "__main__":
