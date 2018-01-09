@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-import os
 import sys
 from copy import copy
 from typing import List
@@ -10,22 +9,39 @@ from toktokkie.utils.metadata.MetaDataManager import MetaDataManager
 from malscraper.MalAnime import UserMalAnime, get_user_xml_data
 
 
-def check_watch_status(maldata: UserMalAnime) -> bool:
+def check_watch_status(series: AnimeSeries, maldata: UserMalAnime) -> bool:
     if maldata.watch_status == "onhold":
-        print("\033[33m" + maldata.name + " is on hold\033[0m")
+        # print("\033[33m" + maldata.name + " is on hold\033[0m")
         return False
     elif maldata.watch_status != "completed":
-        print("\033[31m" + maldata.name + " is not completed (" +
-              str(maldata.watch_status) + ")\033[0m")
+
+        if maldata.url in series.myanimelist_ignore_urls:
+            return False
+        elif create_id_url(maldata.url) in series.myanimelist_ignore_urls:
+            return False
+
+        elif maldata.airing_status != "Not yet aired":
+            print("\033[31m" + maldata.name + " is not completed (" +
+                  str(maldata.watch_status) + ")\033[0m")
+
+        else:
+            return False
     return True
+
+
+def create_id_url(url: str) -> str:
+    return "https://myanimelist.net/anime.php?id=" + \
+           url.split("/anime/")[1].split("/")[0]
 
 
 def check_for_url(url: str, series: AnimeSeries):
     urls = get_urls_from_series(series)
-    id_url = "https://myanimelist.net/anime.php?id=" + \
-             url.split("/anime/")[1].split("/")[0]
+    ignored = series.myanimelist_ignore_urls
+    id_url = create_id_url(url)
 
     if url in urls or id_url in urls:
+        pass  # OK
+    elif url in ignored or id_url in urls:
         pass  # OK
     else:
         print("\033[36mMAL URL missing: " + url + "\033[0m")
@@ -36,7 +52,7 @@ def get_urls_from_series(series: AnimeSeries) -> List[str]:
     metadata = copy(series)
     for season in series.seasons:
         metadata.set_child_extender("seasons", season)
-        urls.append(metadata.myanimelist_url)
+        urls += metadata.myanimelist_urls
     return urls
 
 
@@ -44,27 +60,31 @@ def check_directory(directory: str, username: str):
 
     series = AnimeSeries(directory)
     xmldata = get_user_xml_data(username)
-    maldata = UserMalAnime(series.myanimelist_url, username, xmldata)
 
-    check_watch_status(maldata)
+    for mal_url in series.myanimelist_urls:
+        maldata = UserMalAnime(mal_url, username, xmldata)
 
-    for title, url in maldata.related.items():
+        check_watch_status(series, maldata)
 
-        if "/manga/" in url:  # Skip manga
-            continue
+        for title, url in maldata.related.items():
 
-        related_maldata = UserMalAnime(url, username, xmldata)
+            if "/manga/" in url:  # Skip manga
+                continue
 
-        if not check_watch_status(related_maldata):
-            continue
+            related_maldata = UserMalAnime(url, username, xmldata)
 
-        check_for_url(url, series)
+            if not check_watch_status(series, related_maldata):
+                continue
+
+            check_for_url(url, series)
 
 
 def main():
     username = "user_v42-1337"
     path = sys.argv[1]
-    series = MetaDataManager.find_recursive_media_directories(path, "anime_series")
+
+    series = \
+        MetaDataManager.find_recursive_media_directories(path, "anime_series")
     for s in series:
         print(s)
         check_directory(s, username)

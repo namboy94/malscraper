@@ -40,16 +40,20 @@ class MalAnime(object):
         self.soup = BeautifulSoup(response, "html.parser")
         self.name = self.__parse_name()
         self.related = self.__parse_related()
+        self.airing_status = self.__parse_airing_status()
 
     @staticmethod
     def get_url_data(url: str) -> str:
         sleeper = 1
         response = requests.get(url)
 
-        while response.status_code == 429:  # Circumvent rate limiting
+        while response.status_code in [429, 404]:  # Circumvent rate limiting
             time.sleep(sleeper)
             sleeper += 1
             response = requests.get(url)
+
+            if response.status_code == 404:
+                print("404 error?")
 
         if response.status_code != 200:
             print("HTTP ERROR: " + str(response.status_code) + " " + str(url))
@@ -78,6 +82,13 @@ class MalAnime(object):
         except IndexError:
             pass
         return related
+
+    def __parse_airing_status(self) -> str:
+        """
+        Parses the airing status of a series
+        :return: The airing status
+        """
+        return str(self.soup).split("Status:</span>")[1].split("</div>")[0].strip()
 
 
 class UserMalAnime(MalAnime):
