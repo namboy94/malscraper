@@ -1,6 +1,5 @@
-#!/usr/bin/env python
 """
-Copyright 2017 Hermann Krumrey
+Copyright 2017-2018 Hermann Krumrey
 
 This file is part of mal-scraper.
 
@@ -18,8 +17,17 @@ You should have received a copy of the GNU General Public License
 along with mal-scraper.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from malscraper.malscraper import main
+
+from enum import Enum
 
 
-if __name__ == "__main__":
-    main()
+class WatchState(Enum):
+    """
+    Enum that models the different watch-states a series can have
+    """
+    WATCHING = 1
+    COMPLETED = 2
+    ON_HOLD = 3
+    DROPPED = 4
+    PLAN_TO_WATCH = 6
+    NOT_IN_LIST = 404

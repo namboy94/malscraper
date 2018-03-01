@@ -18,7 +18,13 @@ along with mal-scraper.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 
-version = "0.2.0"
-"""
-The current version of the project.
-"""
+from enum import Enum
+
+
+class AiringState(Enum):
+    """
+    Enum that models the different airing states a series can have
+    """
+    FINISHED = "Finished Airing"
+    AIRING = "Currently Airing"
+    NOT_YET_AIRED = "Not yet aired"

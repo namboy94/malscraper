@@ -1,5 +1,5 @@
 """
-Copyright 2017 Hermann Krumrey
+Copyright 2017-2018 Hermann Krumrey
 
 This file is part of mal-scraper.
 
@@ -17,11 +17,9 @@ You should have received a copy of the GNU General Public License
 along with mal-scraper.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import sys
-import time
-import requests
-from bs4 import BeautifulSoup
-from typing import Dict
+from typing import List
+from malscraper.Cache import Cache
+from malscraper.types.AiringState import AiringState
 
 
 class MalAnime(object):
@@ -29,37 +27,17 @@ class MalAnime(object):
     Class that models a myanimelist anime
     """
 
-    def __init__(self, url: str):
+    def __init__(self, mal_id: int):
         """
         Generates a MalAnime object
-        :param url: The anime's URL on myanimelist.net
+        :param mal_id: The anime's ID on myanimelist.net
         """
-        self.url = url
-
-        response = MalAnime.get_url_data(url)
-        self.soup = BeautifulSoup(response, "html.parser")
+        self.id = mal_id
+        self.soup = Cache().load_anime_page(self.id)
         self.name = self.__parse_name()
-        self.related = self.__parse_related()
+        self.related_anime = self.__parse_related("anime")
+        self.related_manga = self.__parse_related("manga")
         self.airing_status = self.__parse_airing_status()
-
-    @staticmethod
-    def get_url_data(url: str) -> str:
-        sleeper = 1
-        response = requests.get(url)
-
-        while response.status_code in [429, 404]:  # Circumvent rate limiting
-            time.sleep(sleeper)
-            sleeper += 1
-            response = requests.get(url)
-
-            if response.status_code == 404:
-                print("404 error?")
-
-        if response.status_code != 200:
-            print("HTTP ERROR: " + str(response.status_code) + " " + str(url))
-            sys.exit(1)
-
-        return response.text
 
     def __parse_name(self) -> str:
         """
@@ -68,85 +46,34 @@ class MalAnime(object):
         """
         return self.soup.select("h1")[0].text
 
-    def __parse_related(self) -> Dict[str, str]:
+    def __parse_related(self, media_type: str) -> List[int]:
         """
         Parses the URLs of related anime
+        :param media_type: The media type to check for (anime or manga)
         :return: A dictionary consisting of the names and the URLS
                  of the related series
         """
-        related = {}
+        related = []
         try:
             table = self.soup.select(".anime_detail_related_anime")[0]
             for entry in table.select("a"):
-                related[entry.text] = "https://myanimelist.net" + entry["href"]
+                path = entry["href"]
+                mal_id = path.rsplit("/", 2)[1]
+                if path.startswith("/" + media_type + "/"):
+                    related.append(mal_id)
+
         except IndexError:
             pass
         return related
 
-    def __parse_airing_status(self) -> str:
+    def __parse_airing_status(self) -> AiringState:
         """
         Parses the airing status of a series
         :return: The airing status
         """
-        return str(self.soup).split("Status:</span>")[1].split("</div>")[0].strip()
+        state = \
+            str(self.soup).split("Status:</span>")[1].split("</div>")[0].strip()
 
-
-class UserMalAnime(MalAnime):
-    """
-    Class that extends the myanimelist Anime model
-    by integrating user-specific data
-    """
-
-    def __init__(self, url: str, username: str, xml_data: BeautifulSoup=None):
-        super().__init__(url)
-        self.username = username
-        if xml_data is not None:
-            self.xml_data = xml_data
-        else:
-            self.xml_data = get_user_xml_data(username)
-
-        url = "https://myanimelist.net/malappinfo.php?" \
-              "type=anime&status=all&u=" + self.username
-        response = MalAnime.get_url_data(url)
-
-        self.user_series_data = None
-        xml_soup = BeautifulSoup(response, features="xml")
-        for series in xml_soup.find_all("anime"):
-            name = series.find_all("series_title")[0].text
-            if name == self.name:
-                self.user_series_data = series
-                break
-
-        if self.user_series_data is not None:
-            self.watch_status = self.__parse_watch_status()
-
-        else:
-            self.watch_status = "not in list"
-
-    def __parse_watch_status(self) -> str:
-        state = self.user_series_data.find_all("my_status")[0].text
-        try:
-            return {
-                1: "watching",
-                2: "completed",
-                3: "onhold",
-                4: "dropped",
-                6: "plantowatch"
-            }[int(state)]
-        except ValueError:
-            return state
-
-
-def get_user_xml_data(username: str) -> BeautifulSoup:
-    """
-    Retrieves the XML data for a user's anime series from the MAL API.
-    :param username: The user for which to retrieve the XML data
-    :return: The XML data in a BeautifulSoup parser
-    """
-    url = "https://myanimelist.net/malappinfo.php?" \
-          "type=anime&status=all&u=" + username
-    response = requests.get(url)
-    while response.status_code != 200:
-        time.sleep(1)
-        response = requests.get(url)
-    return BeautifulSoup(response.text, features="xml")
+        for airing_type in AiringState:
+            if airing_type.value == state:
+                return airing_type

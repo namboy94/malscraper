@@ -1,5 +1,5 @@
 """
-Copyright 2017 Hermann Krumrey
+Copyright 2017-2018 Hermann Krumrey
 
 This file is part of mal-scraper.
 
@@ -16,13 +16,3 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with mal-scraper.  If not, see <http://www.gnu.org/licenses/>.
 """
-
-from malscraper.MalAnime import MalAnime, UserMalAnime
-
-
-def main():
-    UserMalAnime("https://myanimelist.net/anime/33836/Seiren", "user_v42-1337")
-
-
-if __name__ == "__main__":
-    main()

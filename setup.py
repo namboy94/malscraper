@@ -1,5 +1,5 @@
 """
-Copyright 2017 Hermann Krumrey
+Copyright 2017-2018 Hermann Krumrey
 
 This file is part of mal-scraper.
 
@@ -45,26 +45,6 @@ def readme():
             return f.read()
 
 
-def find_scripts():
-    """
-    Returns a list of scripts in the bin directory
-    :return: the list of scripts
-    """
-    scripts = []
-
-    for file_name in os.listdir("bin"):
-
-        path = os.path.join("bin", file_name)
-        if file_name == "__init__.py":
-            continue
-        elif not os.path.isfile(path):
-            continue
-        else:
-            scripts.append(os.path.join("bin", file_name))
-
-    return scripts
-
-
 setup(
     name="malscraper",
     version=version,
@@ -90,6 +70,6 @@ setup(
     install_requires=["bs4", "requests", "typing", "lxml"],
     test_suite='nose.collector',
     tests_require=['nose'],
-    scripts=find_scripts(),
+    scripts=[],
     zip_safe=False
 )
