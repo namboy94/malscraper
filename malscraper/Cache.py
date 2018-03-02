@@ -1,8 +1,28 @@
+"""
+Copyright 2017-2018 Hermann Krumrey
+
+This file is part of mal-scraper.
+
+mal-scraper is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+mal-scraper is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with mal-scraper.  If not, see <http://www.gnu.org/licenses/>.
+"""
+
 import os
 import sys
 import time
 import requests
 from bs4 import BeautifulSoup
+from malscraper.types.MediaType import MediaType
 
 
 class Cache:
@@ -10,14 +30,30 @@ class Cache:
     Class that handles fetching and caching of myanimelist data
     """
 
+    initialized = False
+    """
+    Global initialized variable set to true the first time the
+    constructor is called
+    """
+
+    in_memory = {
+        MediaType.ANIME.value: {},
+        MediaType.MANGA.value: {},
+        "users": {}
+    }
+    """
+    In-Memory cache
+    """
+
     flush_time = 86400  # Keep data for one day
     """
     Specifies the flush time for the cached data
     """
 
-    def __init__(self):
+    def __init__(self, preload: bool = False):
         """
         Initializes the cache directories
+        :param preload: Preloads the current cache into memory
         """
 
         self.cache_dir = os.path.join(os.path.expanduser("~"), ".malscraper")
@@ -30,41 +66,63 @@ class Cache:
             if not os.path.isdir(directory):
                 os.makedirs(directory)
 
-    def load_anime_page(self, mal_id: int) -> BeautifulSoup:
+            if preload and not Cache.initialized:
+
+                for element in os.listdir(directory):  # Load cached files
+
+                    if directory == self.anime_cache_dir:
+                        media_type = MediaType.ANIME
+                    elif directory == self.manga_cache_dir:
+                        media_type = MediaType.MANGA
+                    else:
+                        media_type = None
+
+                    if media_type is not None:
+                        element_id = int(element)
+                        self.load_mal_page(element_id, media_type)
+
+                    else:
+                        self.load_user_xml(element)
+
+                Cache.initialized = True
+
+    def load_mal_page(self, mal_id: int, media_type: MediaType):
         """
-        Loads an anime's myanimelist page
-        :param mal_id: The ID of the anime
-        :return: The HTML anime data
+        Loads a myanimelist page
+        :param mal_id: The ID of the anime/manga
+        :param media_type: The type of media to load
+        :return: The HTML data
         """
-        anime_cache_file = os.path.join(self.anime_cache_dir, str(mal_id))
-        if self._needs_refresh(anime_cache_file):
-            url = "https://myanimelist.net/anime/" + str(mal_id)
-            data = self._get_url_data(url)
-            with open(anime_cache_file, "w") as f:
-                f.write(data)
+
+        if mal_id in Cache.in_memory[media_type.value]:
+            return Cache.in_memory[media_type.value][mal_id]
+
         else:
-            with open(anime_cache_file, "r") as f:
-                data = f.read()
+            print("Cache Miss")
 
-        return BeautifulSoup(data, "html.parser")
+            if media_type == MediaType.ANIME:
+                cache_dir = self.anime_cache_dir
+            elif media_type == MediaType.MANGA:
+                cache_dir = self.manga_cache_dir
+            else:
+                print("Invalid Media Type")
+                sys.exit(1)
 
-    def load_manga_page(self, mal_id: int) -> BeautifulSoup:
-        """
-        Loads an manga's myanimelist page
-        :param mal_id: The ID of the manga
-        :return: The HTML anime data
-        """
-        manga_cache_file = os.path.join(self.manga_cache_dir, str(mal_id))
-        if self._needs_refresh(manga_cache_file):
-            url = "https://myanimelist.net/manga/" + str(mal_id)
-            data = self._get_url_data(url)
-            with open(manga_cache_file, "w") as f:
-                f.write(data)
-        else:
-            with open(manga_cache_file, "r") as f:
-                data = f.read()
+            cache_file = os.path.join(cache_dir, str(mal_id))
 
-        return BeautifulSoup(data, "html.parser")
+            if self._needs_refresh(cache_file):
+                url = "https://myanimelist.net/" + media_type.value + "/"
+                url += str(mal_id)
+                data = self._get_url_data(url)
+                with open(cache_file, "w") as f:
+                    f.write(data)
+            else:
+                with open(cache_file, "r") as f:
+                    data = f.read()
+
+            generated = BeautifulSoup(data, "html.parser")
+            Cache.in_memory[media_type.value][mal_id] = generated
+            return generated
 
     def load_user_xml(self, username: str) -> BeautifulSoup:
         """
@@ -72,19 +130,27 @@ class Cache:
         :param username: The username to fetch the data for
         :return: The XML user data
         """
-        user_cache_file = os.path.join(self.user_cache_dir, username)
-        if self._needs_refresh(user_cache_file):
-            url = "https://myanimelist.net/malappinfo.php?" \
-                  "type=anime&status=all&u=" + username
-            data = self._get_url_data(url)
-            with open(user_cache_file, "w") as f:
-                f.write(data)
+
+        if username in Cache.in_memory["users"]:
+            return Cache.in_memory["users"][username]
 
         else:
-            with open(user_cache_file, "r") as f:
-                data = f.read()
 
-        return BeautifulSoup(data, features="xml")
+            user_cache_file = os.path.join(self.user_cache_dir, username)
+            if self._needs_refresh(user_cache_file):
+                url = "https://myanimelist.net/malappinfo.php?" \
+                      "type=anime&status=all&u=" + username
+                data = self._get_url_data(url)
+                with open(user_cache_file, "w") as f:
+                    f.write(data)
+
+            else:
+                with open(user_cache_file, "r") as f:
+                    data = f.read()
+
+            generated = BeautifulSoup(data, features="xml")
+            Cache.in_memory["users"][username] = generated
+            return generated
 
     @staticmethod
     def _needs_refresh(file_path: str) -> float:

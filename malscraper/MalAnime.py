@@ -20,6 +20,7 @@ along with mal-scraper.  If not, see <http://www.gnu.org/licenses/>.
 from typing import List
 from malscraper.Cache import Cache
 from malscraper.types.AiringState import AiringState
+from malscraper.types.MediaType import MediaType
 
 
 class MalAnime(object):
@@ -33,11 +34,12 @@ class MalAnime(object):
         :param mal_id: The anime's ID on myanimelist.net
         """
         self.id = mal_id
-        self.soup = Cache().load_anime_page(self.id)
+        self.soup = Cache().load_mal_page(self.id, MediaType.ANIME)
         self.name = self.__parse_name()
         self.related_anime = self.__parse_related("anime")
         self.related_manga = self.__parse_related("manga")
         self.airing_status = self.__parse_airing_status()
+        self.episode_count = self.__parse_episode_count()
 
     def __parse_name(self) -> str:
         """
@@ -60,7 +62,7 @@ class MalAnime(object):
                 path = entry["href"]
                 mal_id = path.rsplit("/", 2)[1]
                 if path.startswith("/" + media_type + "/"):
-                    related.append(mal_id)
+                    related.append(int(mal_id))
 
         except IndexError:
             pass
@@ -77,3 +79,16 @@ class MalAnime(object):
         for airing_type in AiringState:
             if airing_type.value == state:
                 return airing_type
+
+    def __parse_episode_count(self) -> int or None:
+        """
+        Parses the episode count of a series
+        :return: The amount of episodes or
+                 None if that information is not available
+        """
+        eps = str(self.soup).split("Episodes:</span>")[1].split("</div>")[0]\
+            .strip()
+        try:
+            return int(eps)
+        except ValueError:
+            return None
