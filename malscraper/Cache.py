@@ -98,8 +98,6 @@ class Cache:
             return Cache.in_memory[media_type.value][mal_id]
 
         else:
-            print("Cache Miss")
-
             if media_type == MediaType.ANIME:
                 cache_dir = self.anime_cache_dir
             elif media_type == MediaType.MANGA:

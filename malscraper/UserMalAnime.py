@@ -76,7 +76,8 @@ class UserMalAnime(MalAnime):
         Parses the user-specified tags of an anime
         :return: A list of tags
         """
-        return self.user_series_data.find_all("my_tags")[0].text.split(",")
+        tags = self.user_series_data.find_all("my_tags")[0].text.split(",")
+        return list(filter(lambda x: x != "", tags))
 
     def __parse_start_watching_date(self) -> datetime:
         """
