@@ -1,12 +1,12 @@
-# XDCC Downloader
+# malscraper
 
 |master|develop|
 |:---:|:---:|
-|[![build status](https://gitlab.namibsun.net/namboy94/mal-scraper/badges/master/build.svg)](https://gitlab.namibsun.net/namboy94/mal-scraper/commits/master)|[![build status](https://gitlab.namibsun.net/namboy94/mal-scraper/badges/develop/build.svg)](https://gitlab.namibsun.net/namboy94/mal-scraper/commits/develop)|
+|[![build status](https://gitlab.namibsun.net/namibsun/python/malscraper/badges/master/build.svg)](https://gitlab.namibsun.net/namibsun/python/malscraper/commits/master)|[![build status](https://gitlab.namibsun.net/namibsun/python/malscraper/badges/develop/build.svg)](https://gitlab.namibsun.net/namibsun/python/malscraper/commits/develop)|
 
 ![Logo](resources/logo/logo-readme.png)
 
-A python scraping library.
+A python scraping library for myanimelist.net.
 
 ## Installation
 
@@ -37,13 +37,9 @@ A python scraping library.
    
 ## Further Information
 
-* [Changelog](https://gitlab.namibsun.net/namboy94/mal-scraper/raw/master/CHANGELOG)
-* [License (GPLv3)](https://gitlab.namibsun.net/namboy94/mal-scraper/raw/master/LICENSE)
-* [Gitlab](https://gitlab.namibsun.net/namboy94/mal-scraper)
-* [Github](https://github.com/namboy94/mal-scraper)
-* [Python Package Index Site](https://pypi.python.org/pypi/malscraper)
-* [Documentation(HTML)](https://docs.namibsun.net/html_docs/mal-scraper/index.html)
-* [Documentation(PDF)](https://docs.namibsun.net/pdf_docs/mal-scraper.pdf)
-* [Git Statistics (gitstats)](https://gitstats.namibsun.net/gitstats/mal-scraper/index.html)
-* [Git Statistics (git_stats)](https://gitstats.namibsun.net/git_stats/mal-scraper/index.html)
-* [Test Coverage](https://coverage.namibsun.net/mal-scraper/index.html)
+* [Changelog](CHANGELOG)
+* [License (GPLv3)](LICENSE)
+* [Gitlab](https://gitlab.namibsun.net/namibsun/python/malscraper)
+* [Github](https://github.com/namboy94/malscraper)
+* [Progstats](https://progstats.namibsun.net/projects/malscraper)
+* [PyPi](https://pypi.org/project/malscraper)

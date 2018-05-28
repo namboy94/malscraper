@@ -1,95 +1,45 @@
-"""
-Copyright 2017 Hermann Krumrey
+"""LICENSE
+Copyright 2017 Hermann Krumrey <hermann@krumreyh.com>
 
-This file is part of mal-scraper.
+This file is part of malscraper.
 
-mal-scraper is free software: you can redistribute it and/or modify
+malscraper is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 
-mal-scraper is distributed in the hope that it will be useful,
+malscraper is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with mal-scraper.  If not, see <http://www.gnu.org/licenses/>.
-"""
+along with malscraper.  If not, see <http://www.gnu.org/licenses/>.
+LICENSE"""
 
 # imports
 import os
-from malscraper import version
 from setuptools import setup, find_packages
 
 
-def readme():
-    """
-    Reads the readme file and converts it to RST if pypandoc is
-    installed. If not, the raw markdown text is returned
-    :return: the readme file as a string
-    """
-    # noinspection PyBroadException
-    try:
-        # noinspection PyPackageRequirements,PyUnresolvedReferences
-        import pypandoc
-        with open("README.md") as f:
-            # Convert markdown file to rst
-            markdown = f.read()
-            rst = pypandoc.convert(markdown, "rst", format="md")
-            return rst
+if __name__ == "__main__":
 
-    except ModuleNotFoundError:
-        # If pandoc is not installed, just return the raw markdown text
-        with open("README.md") as f:
-            return f.read()
-
-
-def find_scripts():
-    """
-    Returns a list of scripts in the bin directory
-    :return: the list of scripts
-    """
-    scripts = []
-
-    for file_name in os.listdir("bin"):
-
-        path = os.path.join("bin", file_name)
-        if file_name == "__init__.py":
-            continue
-        elif not os.path.isfile(path):
-            continue
-        else:
-            scripts.append(os.path.join("bin", file_name))
-
-    return scripts
-
-
-setup(
-    name="malscraper",
-    version=version,
-    description="A web-scraping library for myanimelist.net",
-    long_description=readme(),
-    classifiers=[
-        "Natural Language :: English",
-        "Intended Audience :: Developers",
-        "Development Status :: 1 - Planning",
-        "Operating System :: OS Independent",
-        "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 2",
-        "Topic :: Internet :: WWW/HTTP",
-        "License :: OSI Approved :: GNU General Public License v3 (GPLv3)"
-    ],
-    url="https://gitlab.namibsun.net/namboy94/mal-scraper",
-    download_url="https://gitlab.namibsun.net/namboy94/mal-scraper/"
-                 "repository/archive.zip?ref=master",
-    author="Hermann Krumrey",
-    author_email="hermann@krumreyh.com",
-    license="GNU GPL3",
-    packages=find_packages(),
-    install_requires=["bs4", "requests", "typing"],
-    test_suite='nose.collector',
-    tests_require=['nose'],
-    scripts=find_scripts(),
-    zip_safe=False
-)
+    setup(
+        name="malscraper",
+        version=open("version", "r").read(),
+        description="A python scraper for myanimelist.net",
+        long_description=open("README.md", "r").read(),
+        long_description_content_type="text/markdown",
+        author="Hermann Krumrey",
+        author_email="hermann@krumreyh.com",
+        classifiers=[
+            "License :: OSI Approved :: GNU General Public License v3 (GPLv3)"
+        ],
+        url="https://gitlab.namibsun.net/namibsun/python/toktokkie",
+        license="GNU GPL3",
+        packages=find_packages(),
+        scripts=list(map(lambda x: os.path.join("bin", x), os.listdir("bin"))),
+        install_requires=["bs4", "requests", "typing"],
+        include_package_data=True,
+        zip_safe=False
+    )
