@@ -73,8 +73,10 @@ class MalAnime(object):
         Parses the airing status of a series
         :return: The airing status
         """
-        state = \
-            str(self.soup).split("Status:</span>")[1].split("</div>")[0].strip()
+        state = str(self.soup)\
+            .split("Status:</span>")[1]\
+            .split("</div>")[0]\
+            .strip()
 
         for airing_type in AiringState:
             if airing_type.value == state:

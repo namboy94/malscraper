@@ -18,7 +18,6 @@ along with malscraper.  If not, see <http://www.gnu.org/licenses/>.
 LICENSE"""
 
 # imports
-import os
 from setuptools import setup, find_packages
 
 
@@ -38,7 +37,6 @@ if __name__ == "__main__":
         url="https://gitlab.namibsun.net/namibsun/python/toktokkie",
         license="GNU GPL3",
         packages=find_packages(),
-        scripts=list(map(lambda x: os.path.join("bin", x), os.listdir("bin"))),
         install_requires=["bs4", "requests", "typing"],
         include_package_data=True,
         zip_safe=False
