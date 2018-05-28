@@ -1,104 +1,61 @@
 stages:
-  - mirror
   - test
-  - deploy
+  - stats
   - release
-  - docs
-
-github_mirror:
-  stage: mirror
-  tags:
-    - github_namboy94_push
-  script:
-    - git checkout master
-    - git pull
-    - git push git@github.com:namboy94/mal-scraper.git master -f
-    - git checkout develop
-    - git pull
-    - git push git@github.com:namboy94/mal-scraper.git develop -f
 
 stylecheck:
   stage: test
   tags:
-    - pycodestyle
+    - python3
   script:
-    - pycodestyle .
+    - python3 -m venv virtual && source virtual/bin/activate && pip install ci-scripts
+    - python-codestyle-check
 
-run_unit_tests_python_2:
-  stage: test
-  tags:
-    - python2
-    - 3to2
-  script:
-    - 3to2 . --write
-    - python2 setup.py test
-
-run_unit_tests_python_3_with_coverage:
+unittest:
   stage: test
   tags:
     - python3
+    - progstats
   script:
-    - python3 setup.py nosetests -v
-      --with-coverage --cover-package=malscraper --cover-branches --cover-erase --cover-html --cover-inclusive
-    - rsync -av cover/ /var/www/coverage.namibsun.net/public_html/mal-scraper --delete-before
+    - python3 -m venv virtual && source virtual/bin/activate && pip install ci-scripts
+    - python-unittest
 
-pypi_dist:
-  stage: deploy
-  only:
-    - master
-  tags:
-    - python2
-    - python3
-    - pypi
-  script:
-    - python3 setup.py register sdist upload
-    - python3 setup.py bdist_wheel upload
-    - 3to2 . --write
-    - rm -rf dist
-    - python2 setup.py bdist_wheel
-    - twine upload dist/*
-
-upload_release_to_github:
+release_upload:
   stage: release
   only:
     - master
   tags:
-    - python
+    - python3
   script:
-    - mkdir -p artifacts
-    - git clone https://gitlab.namibsun.net/namboy94/ci-scripts.git
-    - python ci-scripts/src/changelog-reader/changelog-reader.py -c CHANGELOG -d current_changelog
-    - python ci-scripts/src/github-release-uploader/github-release-uploader.py namboy94 mal-scraper $GITHUB_ACCESS_TOKEN
-      $(python3 setup.py -V) current_changelog artifacts -b master
+    - python3 -m venv virtual && source virtual/bin/activate && pip install ci-scripts
+    - github-release-upload $(cat version) "$(changelog-reader)"
+    - gitlab-release-upload $(cat version) "$(changelog-reader)"
 
-upload_release_to_gitlab:
+pypi_upload:
   stage: release
   only:
     - master
   tags:
-    - python
+    - python3
   script:
-    - mkdir -p artifacts
-    - git clone https://gitlab.namibsun.net/namboy94/ci-scripts.git
-    - python ci-scripts/src/changelog-reader/changelog-reader.py -c CHANGELOG -d  current_changelog
-    - python ci-scripts/src/gitlab-release-uploader/gitlab-release-uploader.py namboy94 mal-scraper $GITLAB_ACCESS_TOKEN
-      $(python3 setup.py -V) current_changelog artifacts -b master -u https://gitlab.namibsun.net
+    - python3 -m venv virtual && source virtual/bin/activate && pip install ci-scripts
+    - pypi-upload
 
-generate_sphinx_documentation:
-  stage: docs
-  only:
-    - master
-    - develop
+gitstats:
+  stage: stats
   tags:
-    - sphinx
-    - latex
-    - docs
+    - python3
+    - gitstats
+    - progstats
   script:
-    - cd doc
-    - make buildsource
-    - make latexpdf
-    - make html
-    - rsync -av build/latex/mal-scraper.pdf
-      /var/www/docs.namibsun.net/public_html/pdf_docs/mal-scraper.pdf --delete-before
-    - rsync -av build/html/ /var/www/docs.namibsun.net/public_html/html_docs/mal-scraper --delete-before
-    - cd ..
+    - python3 -m venv virtual && source virtual/bin/activate && pip install ci-scripts
+    - gitstats-gen
+
+docgen:
+  stage: stats
+  tags:
+    - python3
+    - progstats
+  script:
+    - python3 -m venv virtual && source virtual/bin/activate && pip install ci-scripts
+    - sphinx-docgen
