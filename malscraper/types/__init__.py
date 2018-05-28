@@ -1,6 +1,5 @@
-#!/usr/bin/env python
 """
-Copyright 2017 Hermann Krumrey
+Copyright 2017-2018 Hermann Krumrey
 
 This file is part of mal-scraper.
 
@@ -17,6 +16,3 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with mal-scraper.  If not, see <http://www.gnu.org/licenses/>.
 """
-
-if __name__ == "__main__":
-    print("Hello World!")
